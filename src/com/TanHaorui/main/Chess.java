@@ -3,8 +3,9 @@ package com.TanHaorui.main;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.Serializable;
 
-public class Chess {
+public abstract class Chess implements Serializable {
 
     //定义一个常量，只能卓定义时或代码块中修改值，其他不允许修改
     private static final int SIZE=30; //棋子大小
@@ -23,7 +24,7 @@ public class Chess {
 
     private String suffix =".png";//棋子图片后缀
 
-    private int player;//0 红 1 黑
+    protected int player;//0 红 1 黑
 
     public void setPlayer(int player){
         this.player=player;
@@ -37,7 +38,7 @@ public class Chess {
     private int x,y;
 
     //棋子的网格坐标 官方提供
-    private Point p;
+    protected Point p;
 
     //棋子的网格坐标，初始位置，不可改变
     private Point initP;
@@ -61,9 +62,24 @@ public class Chess {
     }
 
     public Point getP(){
-
         return p;
     }
+
+    public Chess(String name, int player, Point p){
+        this.name=name;
+        this.player=player;
+        setP(p);
+    }
+
+    public Chess(String name, Point c, int player){
+        this.name=name;
+        this.player=player;
+        setP(p);
+    }
+
+
+
+
 
     /*
     判断棋子初始上/下，1上2下
@@ -155,12 +171,12 @@ public class Chess {
         int upOrDown = isUpOrDown();
         if(upOrDown == 1){
             //up
-           if(tp.y>5){
+           if(tp.y < 6){
                return false;
            }
         }else if (upOrDown == 2){
             //down
-            if(tp.y<6){
+            if(tp.y > 5){
                 return false;
             }
         }
@@ -243,16 +259,51 @@ public class Chess {
         return count;
     }
 
+    //判断是否前进
+    public boolean isForward(Point tp){
+        int upOrDown = isUpOrDown();
+        if(upOrDown == 1){
+            //上
+            if(tp.y > p.y) {
+                return true;
+            }
+        }else if (upOrDown == 2){
+            if(tp.y < p.y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //判断是否后退
+    public boolean isBack(Point tp){
+        int upOrDown = isUpOrDown();
+        if(upOrDown == 1){
+            //上
+            if(tp.y < p.y) {
+                return true;
+            }
+        }else if (upOrDown == 2){
+            if(tp.y > p.y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     //判断棋子是否可以被移动到指定位置
-    public boolean isAbleMove(Point tp,GamePanel gamePanel){
+    public abstract boolean isAbleMove(Point tp,GamePanel gamePanel);
+    /*
+    {
         if("boss".equals(name)){
            return line(tp)>1 && isHome(tp) && getStep(tp) ==1;
         }else if("shi".equals(name)){
             return line(tp)==1 && isHome(tp) && getStep(tp) ==1;
         }
         else if("xiang".equals(name)){
-            return line(tp)==1 && getStep(tp)==2 && !isLame(tp,gamePanel) && isOverRiver(tp);
+            return line(tp)==1 && getStep(tp)==2 && !isLame(tp,gamePanel) && !isOverRiver(tp);
         }
         else if("ma".equals(name)){
             return (line(tp) == 0 || line(tp) == -1) && !isLame(tp,gamePanel);
@@ -273,11 +324,19 @@ public class Chess {
             }
         }
         else if("bing".equals(name)){
-            return true;
+            if(line(tp) < 2 || getStep(tp) > 1){
+                return false;
+            }
+            if(isOverRiver(p)){
+                return !isBack(tp);
+            }else {
+                return isForward(tp);
+            }
+
         }
         return false;
     }
-
+*/
 
     //棋子的绘制方法
     public void draw(Graphics g, JPanel panel){

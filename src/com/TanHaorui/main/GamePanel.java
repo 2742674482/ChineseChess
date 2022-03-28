@@ -9,14 +9,52 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.Arrays;
+import java.util.LinkedList;
 
 public class GamePanel extends JPanel {
     //定义一个保存所有棋子的成员变量，类型是数组
     private Chess[] chesses = new Chess[32];//保存所有的棋子
 
+    public Chess[] getChesses(){
+        return chesses;
+    }
+
+    public void setChesses(Chess[] chesses) {
+        this.chesses = chesses;
+        repaint();
+    }
+
+    //java集合的使用
+    private LinkedList<Record> regretList = new LinkedList();
+
     //当前选中的棋子
     private Chess selectedChess;
+
+    //记住当前阵营
+    private int curPlayer = 0;
+
+    //提示的lable
+    private JLabel hintLabel;
+
+    public void setHintLabel(JLabel hintLabel){
+        this.hintLabel = hintLabel;
+    }
+
+    //regret function
+    public void regret(){
+        Record record=regretList.pollLast();
+        //将操作的棋子的坐标修改回去
+        record.getChess().setP(record.getStart());
+        chesses[record.getChess().getIndex()] = record.getChess();
+        if(record.getEatedChess()!=null){
+            chesses[record.getEatedChess().getIndex()]  = record.getEatedChess();
+        }
+        curPlayer = 1 - record.getChess().getPlayer();
+        overMyTurn();
+        //刷新棋盘
+        repaint();
+    }
+
 
     //无参构造方法：权限修饰符 类名（）{}
     //构造方法，可以让自定义创建对象，做一些必要的操作
@@ -27,6 +65,7 @@ public class GamePanel extends JPanel {
             1 点击棋盘
             2 如何获取棋子对象（如何判断点击的地方是否有棋子）
             3 如何区分第一选择 重新选择 移动 吃子
+
          */
 
         //添加棋子的点击事件
@@ -40,12 +79,15 @@ public class GamePanel extends JPanel {
                 if(selectedChess == null){
                     //第一次选择
                     selectedChess=getChessByp(p);
+                    if (selectedChess != null && selectedChess.getPlayer() != curPlayer){
+                        selectedChess = null;
+                        hintLabel.setText("<html> Wrong choose<br/>"+(curPlayer == 0 ? "Red Go" : "Black Go")+"</html>");
+                    }
                 }else {
                     //重新选择 移动 吃子
                     Chess c = getChessByp(p);
                     if (c!=null){
                         //第n此点击时有棋子
-                        //重新选择 吃子
                         if(c.getPlayer()==selectedChess.getPlayer()){
                             //重新选择
                             System.out.println("reselect");
@@ -58,8 +100,15 @@ public class GamePanel extends JPanel {
                                 /*  从数组中删除被吃掉的棋子
                                     修改该要移动棋子的坐标
                                  */
+                                Record record = new Record();
+                                record.setChess(selectedChess);
+                                record.setStart(selectedChess.getP());
+                                record.setEnd(p);
+                                record.setEatedChess(c);
+                                regretList.add(record);
                                 chesses[c.getIndex()] = null;//从数组中删除被吃掉的棋子
                                 selectedChess.setP(p);
+                                overMyTurn();
                             }
                         }
                     }else{
@@ -67,7 +116,14 @@ public class GamePanel extends JPanel {
                         //移动
                         System.out.println("move");
                         if(selectedChess.isAbleMove(p,GamePanel.this)){
+                            Record record = new Record();
+                            record.setChess(selectedChess);
+                            record.setStart(selectedChess.getP());
+                            record.setEnd(p);
+                            record.setEatedChess(c);
+                            regretList.add(record);
                             selectedChess.setP(p);
+                            overMyTurn();
                         }
                     }
                 }
@@ -77,6 +133,17 @@ public class GamePanel extends JPanel {
             }
         });
     }
+
+    //结束当前回合
+    private void overMyTurn(){
+        curPlayer = curPlayer == 0 ? 1 : 0;
+        selectedChess = null;
+        hintLabel.setText(curPlayer == 0 ? "   Red Go" : "   Black Go");
+    }
+
+
+
+
 
     //根据网格坐标p对象查找棋子对象
     public Chess getChessByp(Point p){
@@ -95,24 +162,27 @@ public class GamePanel extends JPanel {
                 "xiang", "ma", "che", "pao", "pao", "bing", "bing",
                 "bing", "bing", "bing"};
 
-        Point[] ps ={new Point(1,1),new Point(2,1),new Point(3,1),new Point(4,1),
-                new Point(5,1),new Point(6,1),new Point(7,1),new Point(8,1)
-                ,new Point(9,1), new Point(2,3),new Point(8,3), new Point(1,4),
-                new Point(3,4), new Point(5,4),new Point(7,4),new Point(9,4),};
+        int[] xs ={1,2,3,4,5,6,7,8,9,2,8,1,3,5,7,9};
 
         for(int i = 0;i< names.length;i++){
-            Chess c = new Chess();//创建棋子对象
-            c.setName(names[i]);//指定棋子名称
-            c.setP(ps[i]);//指定棋子的网络坐标
-            c.setPlayer(0);
+
+            //解耦合
+            Chess c = ChessFactory.create(names[i], 0, xs[i]);
+
+
+//            c.setName(names[i]);//指定棋子名称
+//            c.setP(ps[i]);//指定棋子的网络坐标
+//            c.setPlayer(0);
             c.setIndex(i);
             chesses[i] =c;//将棋子保存到数组中
         }
         for(int i = 0;i< names.length;i++){
-            Chess c = new Chess();//创建棋子对象
-            c.setName(names[i]);//指定棋子名称
-            c.setP(ps[i]);//指定棋子的网络坐标
-            c.setPlayer(1);
+//            Chess c = new Chess(names[i], 1,ps[i]);//创建棋子对象
+//            c.setName(names[i]);//指定棋子名称
+//            c.setP(ps[i]);//指定棋子的网络坐标
+//            c.setPlayer(1);
+            Chess c = ChessFactory.create(names[i], 1, xs[i]);
+
             c.reserve();
             c.setIndex(i+16);
             chesses[c.getIndex()] =c;//将棋子保存到数组中
