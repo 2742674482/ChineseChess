@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,8 +16,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private GamePanel gp = null;
 
     public MainFrame(){
-        //设置窗口大小
-        setSize(650,500);
+        setSize(600,500);
         //设置窗口居中
         setLocationRelativeTo(null);
         //设置点击关闭按钮同时结束虚拟机
@@ -34,26 +34,33 @@ public class MainFrame extends JFrame implements ActionListener {
         JLabel hintLabel = new JLabel("    RED GO");
         btnPanel.add(hintLabel);
         gp.setHintLabel(hintLabel);
+
         JButton btnRegret = new JButton("Regret");
         btnRegret.setActionCommand("Regret");
         btnRegret.addActionListener(this);
         btnPanel.add(btnRegret);
+
         JButton btnSave = new JButton("Save");
         btnSave.setActionCommand("Save");
         btnSave.addActionListener(this);
         btnPanel.add(btnSave);
+
         JButton btnImport = new JButton("Import");
         btnImport.setActionCommand("Import");
         btnImport.addActionListener(this);
         btnPanel.add(btnImport);
-        JButton btnSfP = new JButton("Sue for Peace");
-        btnSfP.setActionCommand("Sue for Peace");
-        btnSfP.addActionListener(this);
-        btnPanel.add(btnSfP);
-        JButton btnResign  = new JButton("Resign");
-        btnResign.setActionCommand("Resign");
-        btnResign.addActionListener(this);
-        btnPanel.add(btnResign);
+
+        JButton btnRestart = new JButton("Restart");
+        btnRestart.setActionCommand("Restart");
+        btnRestart.addActionListener(this);
+        btnPanel.add(btnRestart);
+
+        JButton btnQuit  = new JButton("Quit");
+        btnQuit.setActionCommand("Quit");
+        btnQuit.addActionListener(this);
+        btnPanel.add(btnQuit);
+
+
         //设置窗口可见
         setVisible(true);
     }
@@ -66,6 +73,9 @@ public class MainFrame extends JFrame implements ActionListener {
 
 
     }
+
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -84,11 +94,11 @@ public class MainFrame extends JFrame implements ActionListener {
                 System.out.println("Import");
                 Import();
                 break;
-            case "Sue for Peace":
-                System.out.println("Sue for Peace");
+            case "Restart":
+                System.out.println("Restart");
                 break;
-            case "Resign":
-                System.out.println("Resign");
+            case "Quit":
+                System.out.println("Quit");
                 break;
         }
     }
@@ -166,5 +176,12 @@ public class MainFrame extends JFrame implements ActionListener {
         }
 
     }
+
+
+
+
+
+
+
 
 }
